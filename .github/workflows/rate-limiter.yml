@@ -1,0 +1,30 @@
+name: rate-limiter
+
+on:
+  push:
+    paths: ["rate-limiter/**", ".github/workflows/rate-limiter.yml"]
+  pull_request:
+    paths: ["rate-limiter/**", ".github/workflows/rate-limiter.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rate-limiter
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+    env:
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rate-limiter/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
